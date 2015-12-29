@@ -2,8 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
-
+var session = require('express-session');
+var uuid = require('node-uuid');
 var db = require('./app/config');
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
@@ -21,11 +21,29 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(session({
+  resave: true,
+  saveUninitialized: true,
+  genid: function(req) {
+    console.log('uuid created');
+    console.log(uuid.v4());
+    return uuid.v4(); // use UUIDs for session IDs 
 
+  },
+  secret: 'keyboard dog'
+}))
 
 app.get('/', 
 function(req, res) {
   res.render('index');
+});
+
+app.get('/login', function(req,res){
+  res.render('login');
+});
+
+app.get('/signup', function(req, res){
+  res.render('signup');
 });
 
 app.get('/create', 
@@ -38,6 +56,25 @@ function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
+});
+
+app.post('/login', function(req, res) {
+ 
+    var username = req.body.username;
+    var password = req.body.password;
+ 
+    if(username == 'demo' && password == 'demo'){
+        //console.log(req);
+        console.log(req.session);
+        req.session.regenerate(function(){
+        req.session.user = username;
+        res.redirect('/');
+        console.log(req.session);
+        });
+    }
+    else {
+       res.redirect('login');
+    }    
 });
 
 app.post('/links', 
