@@ -26,36 +26,55 @@ app.use(session({
   saveUninitialized: true,
   genid: function(req) {
     console.log('uuid created');
-    console.log(uuid.v4());
+    //console.log(uuid.v4());
     return uuid.v4(); // use UUIDs for session IDs 
-
   },
   secret: 'keyboard dog'
-}))
+}));
+
 
 app.get('/', 
 function(req, res) {
-  res.render('index');
+  if(req.session.user){
+    res.render('index');
+  }else{
+    //res.render('login');
+    res.redirect(302, '/login');
+  }
+
 });
 
 app.get('/login', function(req,res){
   res.render('login');
 });
 
+app.get('/logout', function(req, res){
+  console.log("Logging out");
+  req.session.destroy(function(err){if(err) console.log(err); });
+  res.redirect(302, '/login');
+});
+
 app.get('/signup', function(req, res){
   res.render('signup');
 });
 
-app.get('/create', 
-function(req, res) {
-  res.render('index');
+app.get('/create', function(req, res) {
+  if(req.session.user){
+    res.render('index');
+  } else {
+    res.redirect(302, '/login')
+  }
 });
 
 app.get('/links', 
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
+ if(req.session.user){
+    Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
+ }else{
+   res.redirect(302, '/login');
+ }
 });
 
 app.post('/login', function(req, res) {
@@ -76,6 +95,8 @@ app.post('/login', function(req, res) {
        res.redirect('login');
     }    
 });
+
+
 
 app.post('/links', 
 function(req, res) {
