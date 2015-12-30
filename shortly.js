@@ -53,13 +53,21 @@ app.get('/signup', function(req, res){
   res.render('signup');
 });
 
-app.get('/create', function(req, res) {
-  if(req.session.user){
-    res.render('index');
-  } else {
-    res.redirect(302, '/login')
-  }
-});
+// app.get('/create', function(req, res) {
+//   if(req.session.user){
+//     res.render('index');
+//   } else {
+//     res.redirect(302, '/login')
+//   }
+// });
+
+app.get('/create',util.checkUser ,function(req, res){
+  res.render('index');
+})
+
+
+
+
 
 app.get('/links', function(req, res) {
  if(req.session.user){
