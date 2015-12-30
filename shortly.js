@@ -3,7 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
-var uuid = require('node-uuid');
+//var uuid = require('node-uuid');
 var db = require('./app/config');
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
@@ -24,11 +24,11 @@ app.use(express.static(__dirname + '/public'));
 app.use(session({
   resave: true,
   saveUninitialized: true,
-  genid: function(req) {
-    console.log('uuid created');
-    //console.log(uuid.v4());
-    return uuid.v4(); // use UUIDs for session IDs 
-  },
+  // genid: function(req) {
+  //   console.log('uuid created');
+  //   //console.log(uuid.v4());
+  //   return uuid.v4(); // use UUIDs for session IDs 
+  // },
   secret: 'keyboard dog'
 }));
 
@@ -95,6 +95,22 @@ app.post('/login', function(req, res) {
        res.redirect('login');
     }    
 });
+
+
+
+app.post('/signup', function(req, res){
+  new User({username: req.body.username }, { password: req.body.password }).fetch().then(function(found){
+    if (found) {
+      console.log("Account exists");
+      res.redirect(302, '/signup');
+    } else {
+      new User({username: req.body.username }, { password: req.body.password }).save()
+      console.log('Account Created');
+      res.redirect(302, '/login');
+    }
+  })
+});
+
 
 
 
