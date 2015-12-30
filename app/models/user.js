@@ -8,7 +8,17 @@ var User = db.Model.extend({
   initialize: function(username, password){
     console.log('user model init');
     console.log(username);
+    console.log(this.username);
+    console.log(password);
   },
+  comparePassword: function(attemptedPassword){
+    if (this.get('password') === attemptedPassword) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+
 });
 
 module.exports = User;
