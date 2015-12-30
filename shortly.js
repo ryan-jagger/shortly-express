@@ -24,11 +24,6 @@ app.use(express.static(__dirname + '/public'));
 app.use(session({
   resave: true,
   saveUninitialized: true,
-  // genid: function(req) {
-  //   console.log('uuid created');
-  //   //console.log(uuid.v4());
-  //   return uuid.v4(); // use UUIDs for session IDs 
-  // },
   secret: 'keyboard dog'
 }));
 
@@ -66,8 +61,7 @@ app.get('/create', function(req, res) {
   }
 });
 
-app.get('/links', 
-function(req, res) {
+app.get('/links', function(req, res) {
  if(req.session.user){
     Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
@@ -82,36 +76,34 @@ app.post('/login', function(req, res) {
     var username = req.body.username;
     var password = req.body.password;
  
-    if(username == 'demo' && password == 'demo'){
-        //console.log(req);
-        console.log(req.session);
-        req.session.regenerate(function(){
+    new User({username: req.body.username}).fetch().then(function(found){
+      //console.log('found: ', (found.get('password') === password));
+      if (found.comparePassword(password)) {
         req.session.user = username;
         res.redirect('/');
-        console.log(req.session);
-        });
-    }
-    else {
-       res.redirect('login');
-    }    
+      } else {
+        res.redirect(302, '/login');
+      }
+    });
 });
 
 
 
+//CONFIGURE CHECK USER
 app.post('/signup', function(req, res){
-  new User({username: req.body.username }, { password: req.body.password }).fetch().then(function(found){
+  new User({username: req.body.username}).fetch().then(function(found){
     if (found) {
       console.log("Account exists");
       res.redirect(302, '/signup');
     } else {
-      new User({username: req.body.username }, { password: req.body.password }).save()
-      console.log('Account Created');
-      res.redirect(302, '/login');
+      new User({username: req.body.username, password: req.body.password }).save();
+      req.session.user = req.body.username;
+      res.redirect('/');
     }
   })
 });
 
-
+//[client] --get--> [server]-->[routing] ----[middleware]-->[middleware]->[routes] 
 
 
 app.post('/links', 
